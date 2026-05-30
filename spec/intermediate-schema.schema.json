@@ -1,0 +1,1050 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://doctoapp.app/schemas/intermediate-schema.v1.json",
+  "title": "DocToApp Intermediate Schema",
+  "description": "Foundational data contract emitted by the BUILD ENGINE (claude-opus-4-8) during PARSE (written to /mnt/session/outputs/schema.json) and consumed verbatim during BUILD. Describes one patient mini-app derived from a clinician .docx. Both system prompts and the build engine reference this. All patient-facing copy is es-MX and MUST preserve diacritics (Situación/Emoción/López).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "meta",
+    "fields",
+    "views",
+    "persistence"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "Contract version. Bump on any breaking change.",
+      "const": "1.0"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "profession",
+        "archetype",
+        "theme"
+      ],
+      "properties": {
+        "title": {
+          "description": "Patient-facing app title, taken verbatim from the docx (accents preserved). e.g. 'Diario de pensamientos'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "subtitle": {
+          "description": "Optional small subtitle under the title, e.g. 'con Dra. López'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "intro": {
+          "description": "Optional short plain-Spanish instruction shown above the form. Friendly, no jargon.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "profession": {
+          "description": "Clinician domain that authored the template.",
+          "type": "string",
+          "enum": [
+            "psicologia",
+            "nutricion",
+            "fisioterapia",
+            "general"
+          ]
+        },
+        "archetype": {
+          "description": "Determines views and behavior. tracker_recurrente => recurring entries with history+chart; autoevaluacion_resultado => questionnaire that computes a score with result + mandatory disclaimer; formulario_unico => one-time form, no history.",
+          "type": "string",
+          "enum": [
+            "tracker_recurrente",
+            "autoevaluacion_resultado",
+            "formulario_unico"
+          ]
+        },
+        "frequency": {
+          "description": "Suggested cadence for recurring trackers. Required for tracker_recurrente, forbidden otherwise (see conditionals).",
+          "type": "string",
+          "enum": [
+            "diaria",
+            "semanal",
+            "mensual",
+            "por_episodio",
+            "libre"
+          ]
+        },
+        "theme": {
+          "description": "Per-domain CALM accent token. The mini-app exposes accent as a single swappable --primary CSS var.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accent"
+          ],
+          "properties": {
+            "accent": {
+              "description": "Named sober accent chosen by domain/archetype. sage = mental-health/nutrition (brand default); blue = sleep; terracotta = pain/body; teal = weekly check-in; amber = unclassified/draft.",
+              "type": "string",
+              "enum": [
+                "sage",
+                "blue",
+                "terracotta",
+                "teal",
+                "amber"
+              ]
+            },
+            "accentHex": {
+              "description": "Optional override hex for --primary (button bg / active scale / chart line / focus ring). Must pass >=4.5:1 with white ink.",
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "accentInk": {
+              "description": "Optional override hex for text on the accent (--primary-ink). Defaults to white.",
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "description": "tracker_recurrente REQUIRES a frequency.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "archetype": {
+                "const": "tracker_recurrente"
+              }
+            },
+            "required": [
+              "archetype"
+            ]
+          },
+          "then": {
+            "required": [
+              "frequency"
+            ]
+          }
+        },
+        {
+          "description": "Only tracker_recurrente may carry a frequency.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "archetype": {
+                "enum": [
+                  "autoevaluacion_resultado",
+                  "formulario_unico"
+                ]
+              }
+            },
+            "required": [
+              "archetype"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "frequency"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "fields": {
+      "description": "Ordered list of patient-facing fields inferred from the docx. Labels keep original accented Spanish verbatim.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 40,
+      "items": {
+        "$ref": "#/$defs/field"
+      }
+    },
+    "scoring": {
+      "description": "Present only for autoevaluacion_resultado (forbidden for other archetypes, see conditionals). Computes a numeric score and maps it to result bands. A non-empty non-diagnostic disclaimer is MANDATORY whenever scoring is present.",
+      "$ref": "#/$defs/scoring"
+    },
+    "views": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "form"
+      ],
+      "properties": {
+        "form": {
+          "description": "The 'Hoy' / data-entry view. Always present.",
+          "const": true
+        },
+        "history": {
+          "description": "Reverse-chronological entries list. Required true for tracker_recurrente; forbidden otherwise.",
+          "type": "boolean"
+        },
+        "chart": {
+          "description": "Inline-SVG line/bar/area chart of a single tracked numeric/scale field over time. Only allowed for tracker_recurrente.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "type"
+          ],
+          "properties": {
+            "field": {
+              "description": "id of the number/scale/rating field to chart. Must reference an existing field id (referential integrity is enforced in post-validation, not by this schema).",
+              "type": "string",
+              "pattern": "^[a-z][a-zA-Z0-9]*$",
+              "minLength": 2,
+              "maxLength": 40
+            },
+            "type": {
+              "description": "Chart rendering.",
+              "type": "string",
+              "enum": [
+                "line",
+                "bar",
+                "area"
+              ]
+            },
+            "title": {
+              "description": "Optional chart title, e.g. 'Intensidad de la emoción (1-10)'.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        },
+        "result": {
+          "description": "Score + band readout view. Required true for autoevaluacion_resultado; forbidden otherwise.",
+          "type": "boolean"
+        }
+      }
+    },
+    "persistence": {
+      "description": "MVP stores patient data in the browser only. No network, no functional export.",
+      "const": "localStorage"
+    },
+    "share": {
+      "description": "Non-functional 'Compartir resultados' teaser config. Export is DEFERRED; the button must not actually download anything.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "teaser"
+      ],
+      "properties": {
+        "teaser": {
+          "const": true
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "default": "Compartir resultados"
+        }
+      }
+    },
+    "parserNotes": {
+      "description": "OPTIONAL negotiation log. When the uploaded document has a structure that falls OUTSIDE the MVP field catalog/archetypes (e.g. a 2D weekly Behavioral Activation grid, a multi-subscale questionnaire like YSQ-III approximated to a single total, a body-map), the PARSE turn does NOT fail or silently mangle it: it represents the structure with the closest catalog fields AND records an entry here. The orchestrator then proactively surfaces each note to the professional so they co-decide whether to keep, adjust, or simplify the proposed representation. Absent or empty when the document maps cleanly onto the catalog.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/$defs/parserNote"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "tracker_recurrente => views.history must be true; result and scoring are forbidden (chart allowed).",
+      "if": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "archetype": {
+                "const": "tracker_recurrente"
+              }
+            },
+            "required": [
+              "archetype"
+            ]
+          }
+        },
+        "required": [
+          "meta"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "scoring"
+          ]
+        },
+        "properties": {
+          "views": {
+            "required": [
+              "history"
+            ],
+            "properties": {
+              "history": {
+                "const": true
+              }
+            },
+            "not": {
+              "required": [
+                "result"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "autoevaluacion_resultado => views.result must be true AND a scoring object MUST be present; history and chart are forbidden (form + result only).",
+      "if": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "archetype": {
+                "const": "autoevaluacion_resultado"
+              }
+            },
+            "required": [
+              "archetype"
+            ]
+          }
+        },
+        "required": [
+          "meta"
+        ]
+      },
+      "then": {
+        "required": [
+          "scoring"
+        ],
+        "properties": {
+          "views": {
+            "required": [
+              "result"
+            ],
+            "properties": {
+              "result": {
+                "const": true
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "history"
+                  ]
+                },
+                {
+                  "required": [
+                    "chart"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "formulario_unico => no history, no result, no chart, no scoring; form only.",
+      "if": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "archetype": {
+                "const": "formulario_unico"
+              }
+            },
+            "required": [
+              "archetype"
+            ]
+          }
+        },
+        "required": [
+          "meta"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "scoring"
+          ]
+        },
+        "properties": {
+          "views": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "history"
+                  ]
+                },
+                {
+                  "required": [
+                    "result"
+                  ]
+                },
+                {
+                  "required": [
+                    "chart"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "Whenever scoring is present, views.result must be true (the non-empty non-diagnostic disclaimer is enforced inside the scoring def).",
+      "if": {
+        "type": "object",
+        "required": [
+          "scoring"
+        ]
+      },
+      "then": {
+        "properties": {
+          "views": {
+            "required": [
+              "result"
+            ],
+            "properties": {
+              "result": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "fieldId": {
+      "description": "Stable camelCase identifier, unique within fields[]. Referenced by chart.field and scoring.inputs.field. Uniqueness is enforced in post-validation, not by this schema.",
+      "type": "string",
+      "pattern": "^[a-z][a-zA-Z0-9]*$",
+      "minLength": 2,
+      "maxLength": 40
+    },
+    "parserNote": {
+      "description": "One negotiated divergence between the source document's structure and the MVP catalog representation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceStructure",
+        "issue",
+        "proposedRepresentation"
+      ],
+      "properties": {
+        "sourceStructure": {
+          "description": "The out-of-catalog structure found in the document, plain es-MX (e.g. 'cuadrícula semanal de activación conductual', 'cuestionario YSQ-III con 18 subescalas', 'mapa corporal').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "issue": {
+          "description": "Why it does not map cleanly onto the MVP catalog/archetypes, plain es-MX (e.g. 'el catálogo no tiene tipo grid 2D', 'el MVP usa un solo puntaje total, no subescalas').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "proposedRepresentation": {
+          "description": "The closest best-effort representation the parser chose, plain es-MX (e.g. 'lo representé como 7 campos scale, uno por día', 'aproximé a un puntaje total único').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "status": {
+          "description": "Optional co-decision state. 'proposed' = parser's best-effort, awaiting the professional; 'accepted' = professional kept it as-is; 'adjusted' = professional changed it.",
+          "type": "string",
+          "enum": [
+            "proposed",
+            "accepted",
+            "adjusted"
+          ]
+        }
+      }
+    },
+    "option": {
+      "description": "A choice for select/multiselect/rating. value is stable; label is patient-facing es-MX (accents preserved).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "label"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "emoji": {
+          "description": "Optional emoji glyph for a rating face.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/fieldId"
+        },
+        "type": {
+          "description": "Closed MVP field-type catalog.",
+          "type": "string",
+          "enum": [
+            "text",
+            "textarea",
+            "number",
+            "scale",
+            "select",
+            "multiselect",
+            "boolean",
+            "date",
+            "time",
+            "rating"
+          ]
+        },
+        "label": {
+          "description": "Patient-facing field label, verbatim accented Spanish (e.g. 'Situación').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "icon": {
+          "description": "Optional lucide-style icon name for the icon+label header (e.g. 'cloud','heart','utensils').",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "help": {
+          "description": "Optional helper text / placeholder, plain es-MX.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "required": {
+          "description": "Whether the patient must fill this field. Defaults to false.",
+          "type": "boolean"
+        },
+        "placeholder": {
+          "description": "Optional input placeholder, plain es-MX. Valid on text/textarea/number only.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "min": {
+          "description": "Numeric (number) lower bound, or scale lower bound (integer for scale).",
+          "type": "number"
+        },
+        "max": {
+          "description": "Numeric (number) upper bound, or scale upper bound (integer for scale).",
+          "type": "number"
+        },
+        "step": {
+          "description": "Numeric/scale increment.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "unit": {
+          "description": "Optional unit suffix for number fields (e.g. 'g','min','kg').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "minLabel": {
+          "description": "Word label for the low end of a scale (e.g. 'Nada').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "maxLabel": {
+          "description": "Word label for the high end of a scale (e.g. 'Mucho').",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "labels": {
+          "description": "Scale only (OPTIONAL): per-point word labels, one per scale step, in ascending order from min to max (e.g. a 1-6 Likert with 6 distinct anchors like 'Completamente falso'…'Me describe perfectamente'). Complements minLabel/maxLabel; when present, the build engine renders each point with its own label. Its length should equal (max - min)/step + 1 (count check is enforced in post-validation, not by this schema).",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 12,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
+        },
+        "emojiScale": {
+          "description": "Scale only: render the emoji-anchored row (sad face left -> calm face right). Defaults true for mood/intensity scales.",
+          "type": "boolean"
+        },
+        "options": {
+          "description": "Choices for select/multiselect/rating.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/option"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "description": "scale: requires integer min/max; allows step/minLabel/maxLabel/labels/emojiScale; forbids unit/options/placeholder.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "scale"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "min",
+              "max"
+            ],
+            "properties": {
+              "min": {
+                "type": "integer"
+              },
+              "max": {
+                "type": "integer"
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "unit"
+                  ]
+                },
+                {
+                  "required": [
+                    "options"
+                  ]
+                },
+                {
+                  "required": [
+                    "placeholder"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "number: allows min/max/step/unit/placeholder; forbids minLabel/maxLabel/emojiScale/options.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "minLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "maxLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "labels"
+                  ]
+                },
+                {
+                  "required": [
+                    "emojiScale"
+                  ]
+                },
+                {
+                  "required": [
+                    "options"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "select / multiselect / rating: REQUIRE a non-empty options array; forbid min/max/step/unit/minLabel/maxLabel/labels/emojiScale/placeholder.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "select",
+                  "multiselect",
+                  "rating"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "options"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "min"
+                  ]
+                },
+                {
+                  "required": [
+                    "max"
+                  ]
+                },
+                {
+                  "required": [
+                    "step"
+                  ]
+                },
+                {
+                  "required": [
+                    "unit"
+                  ]
+                },
+                {
+                  "required": [
+                    "minLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "maxLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "labels"
+                  ]
+                },
+                {
+                  "required": [
+                    "emojiScale"
+                  ]
+                },
+                {
+                  "required": [
+                    "placeholder"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "text / textarea: allow placeholder; forbid all numeric/scale/choice keys.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "text",
+                  "textarea"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "min"
+                  ]
+                },
+                {
+                  "required": [
+                    "max"
+                  ]
+                },
+                {
+                  "required": [
+                    "step"
+                  ]
+                },
+                {
+                  "required": [
+                    "unit"
+                  ]
+                },
+                {
+                  "required": [
+                    "minLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "maxLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "labels"
+                  ]
+                },
+                {
+                  "required": [
+                    "emojiScale"
+                  ]
+                },
+                {
+                  "required": [
+                    "options"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "description": "boolean / date / time: forbid all numeric/scale/choice keys and placeholder.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "boolean",
+                  "date",
+                  "time"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "min"
+                  ]
+                },
+                {
+                  "required": [
+                    "max"
+                  ]
+                },
+                {
+                  "required": [
+                    "step"
+                  ]
+                },
+                {
+                  "required": [
+                    "unit"
+                  ]
+                },
+                {
+                  "required": [
+                    "minLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "maxLabel"
+                  ]
+                },
+                {
+                  "required": [
+                    "labels"
+                  ]
+                },
+                {
+                  "required": [
+                    "emojiScale"
+                  ]
+                },
+                {
+                  "required": [
+                    "options"
+                  ]
+                },
+                {
+                  "required": [
+                    "placeholder"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "scoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "inputs",
+        "bands",
+        "disclaimer"
+      ],
+      "properties": {
+        "method": {
+          "description": "How the score is computed from inputs.",
+          "type": "string",
+          "enum": [
+            "sum",
+            "weighted"
+          ]
+        },
+        "inputs": {
+          "description": "Fields that contribute to the score. Each references an existing number/scale/rating/select field id.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 40,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field"
+            ],
+            "properties": {
+              "field": {
+                "$ref": "#/$defs/fieldId"
+              },
+              "weight": {
+                "description": "Multiplier for this input. Required when method = weighted (see conditional); ignored for sum.",
+                "type": "number"
+              }
+            }
+          }
+        },
+        "bands": {
+          "description": "Inclusive score ranges mapped to a result label/message. Should cover the full possible score range without gaps (gap/overlap checking is enforced in post-validation, not by this schema).",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "min",
+              "max",
+              "label"
+            ],
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              },
+              "label": {
+                "description": "Band name, es-MX (e.g. 'Ansiedad mínima').",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "message": {
+                "description": "Optional supportive, non-diagnostic guidance for this band.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "severity": {
+                "description": "Optional ordinal severity used only for sober color coding of the band badge.",
+                "type": "string",
+                "enum": [
+                  "low",
+                  "mild",
+                  "moderate",
+                  "high"
+                ]
+              }
+            }
+          }
+        },
+        "disclaimer": {
+          "description": "MANDATORY non-diagnostic disclaimer shown with the result. Must be non-empty es-MX (e.g. 'Esta herramienta no sustituye un diagnóstico profesional.').",
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "allOf": [
+        {
+          "description": "method = weighted REQUIRES a weight on every input.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "const": "weighted"
+              }
+            },
+            "required": [
+              "method"
+            ]
+          },
+          "then": {
+            "properties": {
+              "inputs": {
+                "items": {
+                  "required": [
+                    "weight"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

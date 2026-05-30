@@ -1,0 +1,23 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# New → Blueprint → pick the alusor/doctoapp repo → set the two secret env vars.
+services:
+  - type: web
+    name: doctoapp
+    runtime: node
+    plan: free # free web service (spins down after ~15 min idle → slow cold start; fine for a demo)
+    buildCommand: npm ci && npm run build
+    startCommand: npx next start -p $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ANTHROPIC_API_KEY
+        sync: false # set in the Render dashboard (do not commit)
+      - key: MONGODB_URI
+        sync: false # set in the Render dashboard (do not commit)
+      # Clerk auth — get from the Clerk dashboard. The publishable key is PUBLIC
+      # and is read at BUILD time (inlined into the client bundle), so it must be
+      # present during `npm run build`; Render exposes sync:false vars at build too.
+      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false

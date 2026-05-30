@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.0",
+  "meta": {
+    "title": "Registro de alimentos",
+    "subtitle": "con Lic. García",
+    "intro": "Anota lo que comes a lo largo del día para revisarlo en tu próxima consulta.",
+    "profession": "nutricion",
+    "archetype": "tracker_recurrente",
+    "frequency": "diaria",
+    "theme": {
+      "accent": "sage"
+    }
+  },
+  "fields": [
+    {
+      "id": "comida",
+      "type": "select",
+      "label": "Tiempo de comida",
+      "icon": "clock",
+      "required": true,
+      "options": [
+        {
+          "value": "desayuno",
+          "label": "Desayuno"
+        },
+        {
+          "value": "colacion-am",
+          "label": "Colación de la mañana"
+        },
+        {
+          "value": "comida",
+          "label": "Comida"
+        },
+        {
+          "value": "colacion-pm",
+          "label": "Colación de la tarde"
+        },
+        {
+          "value": "cena",
+          "label": "Cena"
+        }
+      ]
+    },
+    {
+      "id": "hora",
+      "type": "time",
+      "label": "Hora",
+      "icon": "watch",
+      "required": true
+    },
+    {
+      "id": "alimentos",
+      "type": "textarea",
+      "label": "¿Qué comiste?",
+      "icon": "utensils",
+      "help": "Describe los alimentos y las porciones.",
+      "required": true
+    },
+    {
+      "id": "agua",
+      "type": "number",
+      "label": "Vasos de agua",
+      "icon": "droplet",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "vasos"
+    },
+    {
+      "id": "saciedad",
+      "type": "scale",
+      "label": "Nivel de saciedad",
+      "icon": "gauge",
+      "min": 0,
+      "max": 3,
+      "minLabel": "Con hambre",
+      "maxLabel": "Muy satisfecho",
+      "emojiScale": true
+    },
+    {
+      "id": "antojos",
+      "type": "multiselect",
+      "label": "¿Antojos hoy?",
+      "icon": "candy",
+      "options": [
+        {
+          "value": "dulce",
+          "label": "Dulce"
+        },
+        {
+          "value": "salado",
+          "label": "Salado"
+        },
+        {
+          "value": "grasoso",
+          "label": "Grasoso"
+        },
+        {
+          "value": "ninguno",
+          "label": "Ninguno"
+        }
+      ]
+    },
+    {
+      "id": "notas",
+      "type": "text",
+      "label": "Notas",
+      "icon": "pencil"
+    }
+  ],
+  "views": {
+    "form": true,
+    "history": true,
+    "chart": {
+      "field": "agua",
+      "type": "bar",
+      "title": "Vasos de agua por día"
+    }
+  },
+  "persistence": "localStorage",
+  "share": {
+    "teaser": true,
+    "label": "Compartir resultados"
+  }
+}

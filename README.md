@@ -1,38 +1,47 @@
-# Eduardo Velez Santiago — Platanus Build Night — Ciudad de México Project
+<img src="./project-logo.png" alt="DocToApp" width="120" align="right" />
 
-**Current project logo:** project-logo.png
+# DocToApp
 
-<img src="./project-logo.png" alt="Project Logo" width="200" />
+**Convierte la plantilla de Word de un profesional de salud en una mini-app que su paciente llena desde el celular.**
 
-Hacker:
+[🌱 Demo en vivo](https://doctoapp.onrender.com) · Platanus Build Night — Ciudad de México
+
+---
+
+## Qué es
+
+No todos hacen vibecoding. Psicólogos, nutriólogos y fisioterapeutas ya tienen sus
+formatos en Word que entregan a sus pacientes. **DocToApp toma ese `.docx` y lo vuelve
+una mini-app móvil, autocontenida y compartible por link** — sin que el profesional
+escriba una línea de código ni un *prompt* inicial. Sube el archivo, confirma lo que la
+IA detectó, y comparte.
+
+## Cómo funciona (dos cerebros)
+
+- **Orquestador — Claude Sonnet 4.6.** Conversa, muestra el esquema detectado (editable)
+  y hace ≤3 preguntas para confirmarlo. Nunca lee el documento.
+- **Motor de construcción — Claude Opus 4.8 (Managed Agent).** Lo único con la skill
+  oficial `docx` + sandbox. **PARSE** → infiere el esquema intermedio; **BUILD** → escribe
+  un `index.html` autocontenido (móvil-first, `localStorage`, acentos en español);
+  **REFINE** por turnos sobre la misma sesión.
+
+El paciente abre `/d/<slug>` y llena la herramienta desde el celular. Cuando un documento
+se sale del catálogo (tablas, sub-escalas), el agente **propone** una representación en vez
+de fallar en silencio.
+
+## Stack
+
+Next.js 16 (App Router) · Vercel AI SDK v6 · **Claude Managed Agents** (skills `docx`/`pdf`) ·
+MongoDB · **Clerk** (auth, *fail-closed*) · Tailwind v4. Deploy en Render.
+
+## Correr local
+
+```bash
+npm install
+cp .env.example .env.local   # ANTHROPIC_API_KEY, MONGODB_URI, claves de Clerk
+npm run dev
+```
+
+## Hacker
 
 - Eduardo Velez Santiago ([@alusor](https://github.com/alusor))
-
-Before submitting:
-
-- ✅ Set a project name, oneliner and description in build-night-project.json
-- ✅ Provide a 1000x1000 png project logo, max 500kb (project-logo.png)
-- ✅ Provide a concise and to the point readme
-
-## ⚠️ Deploying (Vercel, Render, etc.)
-
-Deploy platforms like **Vercel**, **Render** or **Netlify** can only connect to
-repositories **you own** — they can't be granted access to this organization repo.
-To deploy while keeping your commits here, mirror your code to a personal repo:
-
-1. Create a **personal** repository on your own GitHub account.
-2. Point your local `origin` at **both** repos, so a single `git push` updates each one:
-
-   ```bash
-   # this org repo (keep it as a push target)...
-   git remote set-url --add --push origin https://github.com/platanus-build-night/platanus-build-night-26-mx-alusor.git
-   # ...and your personal repo
-   git remote set-url --add --push origin https://github.com/<your-user>/<your-repo>.git
-   ```
-
-   From now on `git push` sends every commit to **both** repositories.
-3. Connect your deploy service (Vercel, Render, …) to your **personal** repo and deploy from there.
-
-Your commits stay mirrored here for judging, while the deploy runs from the repo you control.
-
-Have fun! 🚀

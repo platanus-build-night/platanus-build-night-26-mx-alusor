@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "meta": {
+    "title": "Diario de pensamientos",
+    "subtitle": "con Dra. López",
+    "intro": "Registra una situación que te haya generado malestar y trabájala paso a paso.",
+    "profession": "psicologia",
+    "archetype": "tracker_recurrente",
+    "frequency": "diaria",
+    "theme": {
+      "accent": "sage"
+    }
+  },
+  "fields": [
+    {
+      "id": "situacion",
+      "type": "textarea",
+      "label": "Situación",
+      "icon": "cloud",
+      "help": "¿Qué pasó? Describe el momento sin juzgarlo.",
+      "required": true
+    },
+    {
+      "id": "emocion",
+      "type": "text",
+      "label": "Emoción",
+      "icon": "heart",
+      "help": "¿Qué sentiste? (ansiedad, tristeza, enojo…)",
+      "required": true
+    },
+    {
+      "id": "intensidadEmocion",
+      "type": "scale",
+      "label": "Intensidad de la emoción",
+      "icon": "activity",
+      "min": 1,
+      "max": 10,
+      "minLabel": "Nada",
+      "maxLabel": "Mucho",
+      "emojiScale": true,
+      "required": true
+    },
+    {
+      "id": "pensamientoAlternativo",
+      "type": "textarea",
+      "label": "Pensamiento alternativo",
+      "icon": "refresh-cw",
+      "help": "Una forma más equilibrada de ver la situación."
+    }
+  ],
+  "views": {
+    "form": true,
+    "history": true,
+    "chart": {
+      "field": "intensidadEmocion",
+      "type": "line",
+      "title": "Intensidad de la emoción (1-10)"
+    }
+  },
+  "persistence": "localStorage",
+  "share": {
+    "teaser": true,
+    "label": "Compartir resultados"
+  }
+}

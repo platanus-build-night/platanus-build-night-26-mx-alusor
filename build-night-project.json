@@ -1,5 +1,5 @@
 {
-  "project-name": "<FILL THIS>",
-  "project-oneliner": "<FILL THIS>",
-  "project-description": "<FILL THIS>"
+  "project-name": "DocToApp",
+  "project-oneliner": "Convierte la plantilla de Word de un profesional de salud en una mini-app que su paciente llena desde el celular.",
+  "project-description": "DocToApp toma el documento que un psicólogo, nutriólogo o fisioterapeuta ya usa (un .docx) y, con un agente de IA, lo transforma en una mini-app móvil autocontenida que el paciente llena y que se comparte por link. Dos cerebros: un orquestador (Claude Sonnet) que conversa y confirma el esquema detectado, y un Claude Managed Agent (Opus) con la skill oficial de docx —lo único que lee el documento— que infiere el esquema y construye el HTML final, refinable por turnos. Stack: Next.js 16, Vercel AI SDK v6, MongoDB y Clerk. MVP open source que siembra un producto interno de Terapify."
 }

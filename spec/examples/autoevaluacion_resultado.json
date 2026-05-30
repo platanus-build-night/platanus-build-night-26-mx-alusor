@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "1.0",
+  "meta": {
+    "title": "Autoevaluación de ansiedad (GAD-7)",
+    "subtitle": "con Dra. López",
+    "intro": "Durante las últimas 2 semanas, ¿con qué frecuencia te han molestado los siguientes problemas?",
+    "profession": "psicologia",
+    "archetype": "autoevaluacion_resultado",
+    "theme": {
+      "accent": "sage"
+    }
+  },
+  "fields": [
+    {
+      "id": "nervioso",
+      "type": "scale",
+      "label": "Sentirte nervioso, ansioso o con los nervios de punta",
+      "icon": "alert-circle",
+      "min": 0,
+      "max": 3,
+      "minLabel": "Nunca",
+      "maxLabel": "Casi todos los días",
+      "labels": [
+        "Nunca",
+        "Varios días",
+        "Más de la mitad de los días",
+        "Casi todos los días"
+      ],
+      "emojiScale": true,
+      "required": true
+    },
+    {
+      "id": "preocupacion",
+      "type": "scale",
+      "label": "No poder dejar de preocuparte o controlar la preocupación",
+      "icon": "brain",
+      "min": 0,
+      "max": 3,
+      "minLabel": "Nunca",
+      "maxLabel": "Casi todos los días",
+      "labels": [
+        "Nunca",
+        "Varios días",
+        "Más de la mitad de los días",
+        "Casi todos los días"
+      ],
+      "emojiScale": true,
+      "required": true
+    },
+    {
+      "id": "relajarse",
+      "type": "scale",
+      "label": "Dificultad para relajarte",
+      "icon": "wind",
+      "min": 0,
+      "max": 3,
+      "minLabel": "Nunca",
+      "maxLabel": "Casi todos los días",
+      "labels": [
+        "Nunca",
+        "Varios días",
+        "Más de la mitad de los días",
+        "Casi todos los días"
+      ],
+      "emojiScale": true,
+      "required": true
+    }
+  ],
+  "scoring": {
+    "method": "sum",
+    "inputs": [
+      {
+        "field": "nervioso"
+      },
+      {
+        "field": "preocupacion"
+      },
+      {
+        "field": "relajarse"
+      }
+    ],
+    "bands": [
+      {
+        "min": 0,
+        "max": 2,
+        "label": "Ansiedad mínima",
+        "message": "Tus respuestas sugieren poca ansiedad por ahora.",
+        "severity": "low"
+      },
+      {
+        "min": 3,
+        "max": 5,
+        "label": "Ansiedad leve",
+        "message": "Podría ser útil comentarlo en tu próxima sesión.",
+        "severity": "mild"
+      },
+      {
+        "min": 6,
+        "max": 9,
+        "label": "Ansiedad moderada o alta",
+        "message": "Te recomendamos hablarlo con tu profesional de salud.",
+        "severity": "high"
+      }
+    ],
+    "disclaimer": "Esta herramienta es un apoyo de autoevaluación y no sustituye un diagnóstico ni el criterio de un profesional de salud."
+  },
+  "views": {
+    "form": true,
+    "result": true
+  },
+  "persistence": "localStorage",
+  "share": {
+    "teaser": true
+  }
+}

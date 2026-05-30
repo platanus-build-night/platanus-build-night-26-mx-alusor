@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0",
+  "meta": {
+    "title": "Ficha de ingreso",
+    "subtitle": "con Dra. López",
+    "intro": "Antes de tu primera sesión, cuéntanos un poco sobre ti. Esta información es confidencial y solo la verá tu profesional.",
+    "profession": "psicologia",
+    "archetype": "formulario_unico",
+    "theme": {
+      "accent": "sage"
+    }
+  },
+  "fields": [
+    {
+      "id": "nombre",
+      "type": "text",
+      "label": "Nombre completo",
+      "icon": "user",
+      "placeholder": "Tu nombre",
+      "required": true
+    },
+    {
+      "id": "fechaNacimiento",
+      "type": "date",
+      "label": "Fecha de nacimiento",
+      "icon": "calendar",
+      "required": true
+    },
+    {
+      "id": "motivoConsulta",
+      "type": "textarea",
+      "label": "¿Qué te trae a consulta?",
+      "icon": "message-circle",
+      "help": "Cuéntanos con tus palabras qué te gustaría trabajar.",
+      "required": true
+    },
+    {
+      "id": "atencionPrevia",
+      "type": "boolean",
+      "label": "¿Has recibido atención psicológica antes?",
+      "icon": "history"
+    },
+    {
+      "id": "areasInteres",
+      "type": "multiselect",
+      "label": "¿Qué áreas te gustaría trabajar?",
+      "icon": "target",
+      "options": [
+        {
+          "value": "ansiedad",
+          "label": "Ansiedad"
+        },
+        {
+          "value": "estado-animo",
+          "label": "Estado de ánimo"
+        },
+        {
+          "value": "relaciones",
+          "label": "Relaciones"
+        },
+        {
+          "value": "estres-laboral",
+          "label": "Estrés laboral"
+        },
+        {
+          "value": "sueno",
+          "label": "Sueño"
+        },
+        {
+          "value": "autoestima",
+          "label": "Autoestima"
+        }
+      ]
+    },
+    {
+      "id": "modalidad",
+      "type": "select",
+      "label": "Modalidad preferida",
+      "icon": "video",
+      "required": true,
+      "options": [
+        {
+          "value": "presencial",
+          "label": "Presencial"
+        },
+        {
+          "value": "linea",
+          "label": "En línea"
+        },
+        {
+          "value": "indistinto",
+          "label": "Indistinto"
+        }
+      ]
+    },
+    {
+      "id": "telefono",
+      "type": "text",
+      "label": "Teléfono de contacto",
+      "icon": "phone",
+      "placeholder": "10 dígitos"
+    }
+  ],
+  "views": {
+    "form": true
+  },
+  "persistence": "localStorage",
+  "share": {
+    "teaser": true,
+    "label": "Compartir resultados"
+  }
+}

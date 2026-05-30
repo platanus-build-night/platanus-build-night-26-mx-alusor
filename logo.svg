@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="DocToApp logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#357c54"/>
+      <stop offset="1" stop-color="#27583b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1000" rx="224" fill="url(#bg)"/>
+  <g transform="translate(104 104) scale(24)">
+    <path d="M8 25c11-1 16-6 17-17-11 1-16 6-17 17Z" fill="#ffffff"/>
+    <path d="M12 21 21 12" fill="none" stroke="#27583b" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

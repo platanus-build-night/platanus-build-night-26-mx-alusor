@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  /* Brand fonts (wired from next/font variables in app/fonts.ts) */
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans-brand);
+  --font-mono: var(--font-mono-brand);
+}
+
+:root {
+  --radius: 0.625rem; /* 10px — soft but not pill-y */
+
+  /* Warm paper neutrals (very low chroma, slight warm hue ~85) */
+  --background: oklch(0.992 0.003 95);
+  --foreground: oklch(0.255 0.012 75);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  /* Primary: muted sage/teal — calm, health-coded, low chroma */
+  --primary: oklch(0.52 0.045 175);
+  --primary-foreground: oklch(0.985 0.004 95);
+
+  --secondary: oklch(0.965 0.006 90);
+  --secondary-foreground: oklch(0.32 0.01 75);
+  --muted: oklch(0.965 0.006 90);
+  --muted-foreground: oklch(0.52 0.012 80);
+  --accent: oklch(0.95 0.012 175);
+  --accent-foreground: oklch(0.30 0.03 175);
+
+  --destructive: oklch(0.55 0.16 27);
+  --border: oklch(0.90 0.006 90);
+  --input: oklch(0.90 0.006 90);
+  --ring: oklch(0.52 0.045 175 / 55%);
+
+  --chart-1: oklch(0.55 0.06 175);
+  --chart-2: oklch(0.62 0.09 50);
+  --chart-3: oklch(0.70 0.07 95);
+  --chart-4: oklch(0.55 0.04 250);
+  --chart-5: oklch(0.55 0.07 330);
+}
+
+.dark {
+  --background: oklch(0.205 0.006 80);
+  --foreground: oklch(0.94 0.004 90);
+  --card: oklch(0.245 0.006 80);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.245 0.006 80);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.70 0.06 175);
+  --primary-foreground: oklch(0.18 0.01 80);
+
+  --secondary: oklch(0.28 0.006 80);
+  --secondary-foreground: oklch(0.94 0.004 90);
+  --muted: oklch(0.28 0.006 80);
+  --muted-foreground: oklch(0.70 0.008 85);
+  --accent: oklch(0.30 0.02 175);
+  --accent-foreground: oklch(0.92 0.01 175);
+
+  --destructive: oklch(0.62 0.15 27);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.70 0.06 175 / 55%);
+
+  --chart-1: oklch(0.70 0.07 175);
+  --chart-2: oklch(0.72 0.10 50);
+  --chart-3: oklch(0.78 0.08 95);
+  --chart-4: oklch(0.68 0.06 250);
+  --chart-5: oklch(0.68 0.08 330);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+}

@@ -1,4 +1,4 @@
-<img src="./project-logo.png" alt="DocToApp" width="120" align="right" />
+<img src="./project-logo.png?v=2" alt="DocToApp" width="120" align="right" />
 
 # DocToApp
 
